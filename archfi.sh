@@ -20,7 +20,7 @@ mainmenu(){
   sel=$(whiptail --backtitle "$apptitle" --title "$txtmainmenu" --menu "" --cancel-button "$txtexit" --default-item "$nextitem" 0 0 0 \
     "${options[@]}" \
     3>&1 1>&2 2>&3)
-  echo sel  >> /var/log/install
+  echo $sel  >> ~/install.log
   if [ "$?" = "0" ]; then
     case $sel in
       "$txtlanguage")
@@ -111,7 +111,7 @@ setkeymap(){
     3>&1 1>&2 2>&3)
   if [ "$?" = "0" ]; then
     clear
-    echo "loadkeys $keymap"
+    echo "loadkeys $keymap" >> ~/install.log
     loadkeys $keymap
     pressanykey
   fi
@@ -128,7 +128,7 @@ chooseeditor(){
     3>&1 1>&2 2>&3)
   if [ "$?" = "0" ]; then
     clear
-    echo "export EDITOR=$sel"
+    echo "export EDITOR=$sel" >> ~/install.log
     export EDITOR=$sel
     EDITOR=$sel
     pressanykey
@@ -211,21 +211,21 @@ diskpartautodos(){
   if [ "$?" = "0" ]; then
     if (whiptail --backtitle "$apptitle" --title "$txtautoparts (dos)" --yesno "${txtautopartsconfirm//%1/$device}" --defaultno 0 0) then
       clear
-      echo "$txtautopartclear"
+      echo "$txtautopartclear" >> ~/install.log
       parted $device mklabel msdos
       sleep 1
-      echo "${txtautopartcreate//%1/boot}"
-      echo -e "n\np\n\n\n+512M\na\nw" | fdisk $device
+      echo "${txtautopartcreate//%1/boot}" >> ~/install.log
+      echo -e "n\np\n\n\n+512M\na\nw" | fdisk $device >> ~/install.log
       sleep 1
-      echo "${txtautopartcreate//%1/swap}"
+      echo "${txtautopartcreate//%1/swap}" >> ~/install.log
       swapsize=$(cat /proc/meminfo | grep MemTotal | awk '{ print $2 }')
       swapsize=$(($swapsize/1000))"M"
-      echo -e "n\np\n\n\n+$swapsize\nt\n\n82\nw" | fdisk $device
+      echo -e "n\np\n\n\n+$swapsize\nt\n\n82\nw" | fdisk $device >> ~/install.log
       sleep 1
-      echo "${txtautopartcreate//%1/root}"
-      echo -e "n\np\n\n\n\nw" | fdisk $device
+      echo "${txtautopartcreate//%1/root}" >> ~/install.log
+      echo -e "n\np\n\n\n\nw" | fdisk $device >> ~/install.log
       sleep 1
-      echo ""
+      echo "" >> ~/install.log
       pressanykey
       bootdev=$device"1"
       swapdev=$device"2"
@@ -247,19 +247,19 @@ diskpartautogpt(){
   if [ "$?" = "0" ]; then
     if (whiptail --backtitle "$apptitle" --title "$txtautoparts (gpt)" --yesno "${txtautopartsconfirm//%1/$device}" --defaultno 0 0) then
       clear
-      echo "$txtautopartclear"
+      echo "$txtautopartclear" >> ~/install.log
       parted $device mklabel gpt
-      echo "${txtautopartcreate//%1/BIOS boot}"
+      echo "${txtautopartcreate//%1/BIOS boot}" >> ~/install.log
       sgdisk $device -n=1:0:+31M -t=1:ef02
-      echo "${txtautopartcreate//%1/boot}"
+      echo "${txtautopartcreate//%1/boot}" >> ~/install.log
       sgdisk $device -n=2:0:+512M
-      echo "${txtautopartcreate//%1/swap}"
+      echo "${txtautopartcreate//%1/swap}" >> ~/install.log
       swapsize=$(cat /proc/meminfo | grep MemTotal | awk '{ print $2 }')
       swapsize=$(($swapsize/1000))"M"
       sgdisk $device -n=3:0:+$swapsize -t=3:8200
-      echo "${txtautopartcreate//%1/root}"
+      echo "${txtautopartcreate//%1/root}" >> ~/install.log
       sgdisk $device -n=4:0:0
-      echo ""
+      echo "" >> ~/install.log
       pressanykey
       bootdev=$device"2"
       swapdev=$device"3"
@@ -281,17 +281,17 @@ diskpartautoefi(){
   if [ "$?" = "0" ]; then
     if (whiptail --backtitle "$apptitle" --title "$txtautoparts (gpt,efi)" --yesno "${txtautopartsconfirm//%1/$device}" --defaultno 0 0) then
       clear
-      echo "$txtautopartclear"
+      echo "$txtautopartclear" >> ~/install.log
       parted $device mklabel gpt
-      echo "${txtautopartcreate//%1/EFI boot}"
+      echo "${txtautopartcreate//%1/EFI boot}" >> ~/install.log
       sgdisk $device -n=1:0:+1024M -t=1:ef00
-      echo "${txtautopartcreate//%1/swap}"
+      echo "${txtautopartcreate//%1/swap}" >> ~/install.log
       swapsize=$(cat /proc/meminfo | grep MemTotal | awk '{ print $2 }')
       swapsize=$(($swapsize/1000))"M"
       sgdisk $device -n=3:0:+$swapsize -t=3:8200
-      echo "${txtautopartcreate//%1/root}"
+      echo "${txtautopartcreate//%1/root}" >> ~/install.log
       sgdisk $device -n=4:0:0
-      echo ""
+      echo "" >> ~/install.log
       pressanykey
       bootdev=$device"1"
       swapdev=$device"3"
@@ -313,17 +313,17 @@ diskpartautoefiusb(){
   if [ "$?" = "0" ]; then
     if (whiptail --backtitle "$apptitle" --title "$txtautoparts (gpt,efi)" --yesno "${txtautopartsconfirm//%1/$device}" --defaultno 0 0) then
       clear
-      echo "$txtautopartclear"
+      echo "$txtautopartclear" >> ~/install.log
       parted $device mklabel gpt
-      echo "${txtautopartcreate//%1/EFI boot}"
+      echo "${txtautopartcreate//%1/EFI boot}" >> ~/install.log
       sgdisk $device -n=1:0:+1024M -t=1:ef00
-      echo "${txtautopartcreate//%1/BIOS boot}"
+      echo "${txtautopartcreate//%1/BIOS boot}" >> ~/install.log
       sgdisk $device -n=3:0:+31M -t=3:ef02
-      echo "${txtautopartcreate//%1/root}"
+      echo "${txtautopartcreate//%1/root}" >> ~/install.log
       sgdisk $device -n=4:0:0
-      echo "$txthybridpartcreate"
-      echo -e "r\nh\n3\nN\n\nY\nN\nw\nY\n" | gdisk $device
-      echo ""
+      echo "$txthybridpartcreate" >> ~/install.log
+      echo -e "r\nh\n3\nN\n\nY\nN\nw\nY\n" | gdisk $device >> ~/install.log
+      echo "" >> ~/install.log
       pressanykey
       bootdev=$device"1"
       swapdev=
@@ -491,27 +491,27 @@ formatbootdevice(){
     return 1
   fi
   clear
-  echo "${txtformatingpart//%1/$2} $sel"
-  echo "----------------------------------------------"
+  echo "${txtformatingpart//%1/$2} $sel" >> ~/install.log
+  echo "----------------------------------------------" >> ~/install.log
   case $sel in
     ext2)
-      echo "mkfs.ext2 $2"
+      echo "mkfs.ext2 $2" >> ~/install.log
       mkfs.ext2 $2
     ;;
     ext3)
-      echo "mkfs.ext3 $2"
+      echo "mkfs.ext3 $2" >> ~/install.log
       mkfs.ext3 $2
     ;;
     ext4)
-      echo "mkfs.ext4 $2"
+      echo "mkfs.ext4 $2" >> ~/install.log
       mkfs.ext4 $2
     ;;
     fat32)
-      echo "mkfs.fat $2"
+      echo "mkfs.fat $2" >> ~/install.log
       mkfs.fat $2
     ;;
   esac
-  echo ""
+  echo "" >> ~/install.log
   pressanykey
 }
 formatswapdevice(){
@@ -524,13 +524,13 @@ formatswapdevice(){
     return 1
   fi
   clear
-  echo "${txtformatingpart//%1/$swapdev} swap"
-  echo "----------------------------------------------------"
+  echo "${txtformatingpart//%1/$swapdev} swap" >> ~/install.log
+  echo "----------------------------------------------------" >> ~/install.log
   case $sel in
     swap)
-      echo "mkswap $swapdev"
+      echo "mkswap $swapdev" >> ~/install.log
       mkswap $swapdev
-      echo ""
+      echo "" >> ~/install.log
       pressanykey
     ;;
   esac
@@ -555,49 +555,49 @@ formatdevice(){
     return 1
   fi
   clear
-  echo "${txtformatingpart//%1/$2} $sel"
-  echo "----------------------------------------------"
+  echo "${txtformatingpart//%1/$2} $sel" >> ~/install.log
+  echo "----------------------------------------------" >> ~/install.log
   case $sel in
     btrfs)
-      echo "mkfs.btrfs -f $2"
+      echo "mkfs.btrfs -f $2" >> ~/install.log
       mkfs.btrfs -f $2
     ;;
     reiserfs)
-      echo "mkfs.reiserfs -f $2"
+      echo "mkfs.reiserfs -f $2" >> ~/install.log
       mkfs.reiserfs -f $2
     ;;
     ext4)
-      echo "mkfs.ext4 $2"
+      echo "mkfs.ext4 $2" >> ~/install.log
       mkfs.ext4 $2
     ;;
     ext3)
-      echo "mkfs.ext3 $2"
+      echo "mkfs.ext3 $2" >> ~/install.log
       mkfs.ext3 $2
     ;;
     ext2)
-      echo "mkfs.ext2 $2"
+      echo "mkfs.ext2 $2" >> ~/install.log
       mkfs.ext2 $2
     ;;
     xfs)
-      echo "mkfs.xfs -f $2"
+      echo "mkfs.xfs -f $2" >> ~/install.log
       mkfs.xfs -f $2
     ;;
     jfs)
-      echo "mkfs.xfs -f $2"
+      echo "mkfs.xfs -f $2" >> ~/install.log
       mkfs.jfs -f $2
     ;;
     luks)
-      echo "$txtcreateluksdevice"
-      echo "cryptsetup luksFormat $2"
+      echo "$txtcreateluksdevice" >> ~/install.log
+      echo "cryptsetup luksFormat $2" >> ~/install.log
       cryptsetup luksFormat $2
       if [ ! "$?" = "0" ]; then
         pressanykey
         return 1
       fi
       pressanykey
-      echo ""
-      echo "$txtopenluksdevice"
-      echo "cryptsetup luksOpen $2 $1"
+      echo "" >> ~/install.log
+      echo "$txtopenluksdevice" >> ~/install.log
+      echo "cryptsetup luksOpen $2 $1" >> ~/install.log
       cryptsetup luksOpen $2 $1
       if [ ! "$?" = "0" ]; then
         pressanykey
@@ -613,11 +613,11 @@ formatdevice(){
       if [ "$?" = "0" ]; then
         case $sel in
           normal)
-            echo "dd if=/dev/zero of=/dev/mapper/$1"
+            echo "dd if=/dev/zero of=/dev/mapper/$1" >> ~/install.log
             dd if=/dev/zero of=/dev/mapper/$1 & PID=$! &>/dev/null
           ;;
           fast)
-            echo "dd if=/dev/zero of=/dev/mapper/$1 bs=60M"
+            echo "dd if=/dev/zero of=/dev/mapper/$1 bs=60M" >> ~/install.log
             dd if=/dev/zero of=/dev/mapper/$1 bs=60M & PID=$! &>/dev/null
           ;;
         esac
@@ -628,7 +628,7 @@ formatdevice(){
           sleep 1
         done
       fi
-      echo ""
+      echo "" >> ~/install.log
       pressanykey
       formatdevice $1 /dev/mapper/$1 noluks
       if [ "$1" = "root" ]; then
@@ -642,30 +642,30 @@ formatdevice(){
         luksdrive=1
         crypttab="\n$1    UUID=$(cryptsetup luksUUID $2)    none"
       fi
-      echo ""
-      echo "$txtluksdevicecreated"
+      echo "" >> ~/install.log
+      echo "$txtluksdevicecreated" >> ~/install.log
     ;;
   esac
-  echo ""
+  echo "" >> ~/install.log
   pressanykey
 }
 
 mountparts(){
   clear
-  echo "mount $rootdev /mnt"
+  echo "mount $rootdev /mnt" >> ~/install.log
   mount $rootdev /mnt
-  echo "mkdir /mnt/{boot,home}"
+  echo "mkdir /mnt/{boot,home}" >> ~/install.log
   mkdir /mnt/{boot,home} 2>/dev/null
   if [ ! "$bootdev" = "" ]; then
-    echo "mount $bootdev /mnt/boot"
+    echo "mount $bootdev /mnt/boot" >> ~/install.log
     mount $bootdev /mnt/boot
   fi
   if [ ! "$swapdev" = "" ]; then
-    echo "swapon $swapdev"
+    echo "swapon $swapdev" >> ~/install.log
     swapon $swapdev
   fi
   if [ ! "$homedev" = "" ]; then
-    echo "mount $homedev /mnt/home"
+    echo "mount $homedev /mnt/home" >> ~/install.log
     mount $homedev /mnt/home
   fi
   pressanykey
@@ -712,17 +712,17 @@ installmenu(){
 
 installbase(){
   clear
-  echo "pacstrap /mnt base"
+  echo "pacstrap /mnt base" >> ~/install.log
   pacstrap /mnt base
   pressanykey
 }
 
 unmountdevices(){
   clear
-  echo "umount -R /mnt"
+  echo "umount -R /mnt" >> ~/install.log
   umount -R /mnt
   if [ ! "$swapdev" = "" ]; then
-    echo "swapoff $swapdev"
+    echo "swapoff $swapdev" >> ~/install.log
     swapoff $swapdev
   fi
   pressanykey
@@ -861,12 +861,12 @@ archmenu(){
 }
 
 archchroot(){
-  echo "arch-chroot /mnt /root"
+  echo "arch-chroot /mnt /root" >> ~/install.log
   cp $0 /mnt/root
   chmod 755 /mnt/root/$(basename "$0")
   arch-chroot /mnt /root/$(basename "$0") --chroot $1 $2
   rm /mnt/root/$(basename "$0")
-  echo "exit"
+  echo "exit" >> ~/install.log
 }
 
 
@@ -874,8 +874,8 @@ archsethostname(){
   hostname=$(whiptail --backtitle "$apptitle" --title "$txtsethostname" --inputbox "" 0 0 "archlinux" 3>&1 1>&2 2>&3)
   if [ "$?" = "0" ]; then
     clear
-    echo "echo \"$hostname\" > /mnt/etc/hostname"
-    echo "$hostname" > /mnt/etc/hostname
+    echo "echo \"$hostname\" > /mnt/etc/hostname" >> ~/install.log
+    echo "$hostname" > /mnt/etc/hostname >> ~/install.log
     pressanykey
   fi
 }
@@ -896,8 +896,8 @@ archsetkeymap(){
     3>&1 1>&2 2>&3)
   if [ "$?" = "0" ]; then
     clear
-    echo "echo \"KEYMAP=$keymap\" > /mnt/etc/vconsole.conf"
-    echo "KEYMAP=$keymap" > /mnt/etc/vconsole.conf
+    echo "echo \"KEYMAP=$keymap\" > /mnt/etc/vconsole.conf" >> ~/install.log
+    echo "KEYMAP=$keymap" > /mnt/etc/vconsole.conf >> ~/install.log
     pressanykey
   fi
 }
@@ -914,8 +914,8 @@ archsetfont(){
     3>&1 1>&2 2>&3)
   if [ "$?" = "0" ]; then
     clear
-    echo "echo \"FONT=$vcfont\" >> /mnt/etc/vconsole.conf"
-    echo "FONT=$vcfont" >> /mnt/etc/vconsole.conf
+    echo "echo \"FONT=$vcfont\" >> /mnt/etc/vconsole.conf" >> ~/install.log
+    echo "FONT=$vcfont" >> /mnt/etc/vconsole.conf >> ~/install.log
     pressanykey
   fi
 }
@@ -931,18 +931,18 @@ archsetlocale(){
     3>&1 1>&2 2>&3)
   if [ "$?" = "0" ]; then
     clear
-    echo "echo \"LANG=$locale.UTF-8\" > /mnt/etc/locale.conf"
-    echo "LANG=$locale.UTF-8" > /mnt/etc/locale.conf
-    echo "echo \"LC_COLLATE=C\" >> /mnt/etc/locale.conf"
-    echo "LC_COLLATE=C" >> /mnt/etc/locale.conf
-    echo "sed -i '/"$locale".UTF-8/s/^#//g' /mnt/etc/locale.gen"
+    echo "echo \"LANG=$locale.UTF-8\" > /mnt/etc/locale.conf" >> ~/install.log
+    echo "LANG=$locale.UTF-8" > /mnt/etc/locale.conf >> ~/install.log
+    echo "echo \"LC_COLLATE=C\" >> /mnt/etc/locale.conf" >> ~/install.log
+    echo "LC_COLLATE=C" >> /mnt/etc/locale.conf >> ~/install.log
+    echo "sed -i '/"$locale".UTF-8/s/^#//g' /mnt/etc/locale.gen" >> ~/install.log
     sed -i '/'$locale'.UTF-8/s/^#//g' /mnt/etc/locale.gen
     archchroot setlocale
     pressanykey
   fi
 }
 archsetlocalechroot(){
-  echo "locale-gen"
+  echo "locale-gen" >> ~/install.log
   locale-gen
   exit
 }
@@ -976,7 +976,7 @@ archsettime(){
   fi
   
   clear
-  echo "ln -sf /mnt/usr/share/zoneinfo/$timezone /mnt/etc/localtime"
+  echo "ln -sf /mnt/usr/share/zoneinfo/$timezone /mnt/etc/localtime" >> ~/install.log
   ln -sf /usr/share/zoneinfo/$timezone /mnt/etc/localtime
   pressanykey
   
@@ -992,12 +992,12 @@ archsettime(){
   
 }
 archsettimeutcchroot(){
-  echo "hwclock --systohc --utc"
+  echo "hwclock --systohc --utc" >> ~/install.log
   hwclock --systohc --utc
   exit
 }
 archsettimelocalchroot(){
-  echo "hwclock --systohc --localtime"
+  echo "hwclock --systohc --localtime" >> ~/install.log
   hwclock --systohc --localtime
   exit
 }
@@ -1008,28 +1008,28 @@ archsetrootpassword(){
   pressanykey
 }
 archsetrootpasswordchroot(){
-  echo "passwd root"
+  echo "passwd root" >> ~/install.log
   passwd root
   exit
 }
 
 archgenfstab(){
   clear
-  echo "genfstab -U -p /mnt > /mnt/etc/fstab"
+  echo "genfstab -U -p /mnt > /mnt/etc/fstab" >> ~/install.log
   genfstab -U -p /mnt > /mnt/etc/fstab
   pressanykey
 }
 
 archgencrypttab(){
   clear
-  echo "echo -e \"$crypttab\" >> /mnt/etc/crypttab"
-  echo -e "$crypttab" >> /mnt/etc/crypttab
+  echo "echo -e \"$crypttab\" >> /mnt/etc/crypttab" >> ~/install.log
+  echo -e "$crypttab" >> /mnt/etc/crypttab >> ~/install.log
   pressanykey
 }
 
 archgenmkinitcpio(){
   clear
-  echo "sed -i \"s/block filesystems/block encrypt filesystems/g\" /mnt/etc/mkinitcpio.conf"
+  echo "sed -i \"s/block filesystems/block encrypt filesystems/g\" /mnt/etc/mkinitcpio.conf" >> ~/install.log
   sed -i "s/block filesystems/block encrypt filesystems/g" /mnt/etc/mkinitcpio.conf
   archchroot genmkinitcpio
   pressanykey
@@ -1044,14 +1044,14 @@ archeditmkinitcpio(){
   fi
 }
 archgenmkinitcpiochroot(){
-  echo "mkinitcpio -p linux"
+  echo "mkinitcpio -p linux" >> ~/install.log
   mkinitcpio -p linux
   exit
 }
 
 archinstallgrub(){
   clear
-  echo "pacstrap /mnt grub"
+  echo "pacstrap /mnt grub" >> ~/install.log
   pacstrap /mnt grub
   pressanykey
   
@@ -1059,14 +1059,14 @@ archinstallgrub(){
     if [ "$efimode" == "1" ]||[ "$efimode" == "2" ]; then
       if (whiptail --backtitle "$apptitle" --title "${txtinstall//%1/efibootmgr}" --yesno "$txtefibootmgr" 0 0) then
         clear
-        echo "pacstrap /mnt efibootmgr"
+        echo "pacstrap /mnt efibootmgr" >> ~/install.log
         pacstrap /mnt efibootmgr
         pressanykey
       fi
     else
       if (whiptail --backtitle "$apptitle" --title "${txtinstall//%1/efibootmgr}" --yesno "$txtefibootmgr" --defaultno 0 0) then
         clear
-        echo "pacstrap /mnt efibootmgr"
+        echo "pacstrap /mnt efibootmgr" >> ~/install.log
         pacstrap /mnt efibootmgr
         pressanykey
       fi
@@ -1076,7 +1076,7 @@ archinstallgrub(){
   if [ "$luksroot" = "1" ]; then
     if (whiptail --backtitle "$apptitle" --title "${txtinstall//%1/grub}" --yesno "$txtgrubluksdetected" 0 0) then
       clear
-      echo "sed -i /GRUB_CMDLINE_LINUX=/c\GRUB_CMDLINE_LINUX=\\\"cryptdevice=/dev/disk/by-uuid/$luksrootuuid:root\\\" /mnt/etc/default/grub"
+      echo "sed -i /GRUB_CMDLINE_LINUX=/c\GRUB_CMDLINE_LINUX=\\\"cryptdevice=/dev/disk/by-uuid/$luksrootuuid:root\\\" /mnt/etc/default/grub" >> ~/install.log
       sed -i /GRUB_CMDLINE_LINUX=/c\GRUB_CMDLINE_LINUX=\"cryptdevice=/dev/disk/by-uuid/$luksrootuuid:root\" /mnt/etc/default/grub
       pressanykey
     fi
@@ -1087,7 +1087,7 @@ archinstallgrub(){
   pressanykey
 }
 archinstallgrubchroot(){
-  echo "grub-mkconfig -o /boot/grub/grub.cfg"
+  echo "grub-mkconfig -o /boot/grub/grub.cfg" >> ~/install.log
   grub-mkconfig -o /boot/grub/grub.cfg
   exit
 }
@@ -1138,23 +1138,23 @@ archinstallbootloader(){
 }
 archinstallbootloaderchroot(){
   if [ ! "$1" = "none" ]; then
-    echo "grub-install --target=i386-pc --recheck $1"
+    echo "grub-install --target=i386-pc --recheck $1" >> ~/install.log
     grub-install --target=i386-pc --recheck $1
   fi
   exit
 }
 archinstallbootloaderefichroot(){
   if [ ! "$1" = "none" ]; then
-    echo "grub-install --target=x86_64-efi --efi-directory=/boot --recheck $1"
+    echo "grub-install --target=x86_64-efi --efi-directory=/boot --recheck $1" >> ~/install.log
     grub-install --target=x86_64-efi --efi-directory=/boot --recheck $1
   fi
   exit
 }
 archinstallbootloaderefiusbchroot(){
   if [ ! "$1" = "none" ]; then
-    echo "grub-install --target=i386-pc --recheck $1"
+    echo "grub-install --target=i386-pc --recheck $1" >> ~/install.log
     grub-install --target=i386-pc --recheck $1
-    echo "grub-install --target=x86_64-efi --efi-directory=/boot --removable --recheck $1"
+    echo "grub-install --target=x86_64-efi --efi-directory=/boot --removable --recheck $1" >> ~/install.log
     grub-install --target=x86_64-efi --efi-directory=/boot --removable --recheck $1
   fi
   exit
@@ -1168,7 +1168,7 @@ archenabledhcpcd(){
   fi
 }
 archenabledhcpcdchroot(){
-  echo "systemctl enable dhcpcd"
+  echo "systemctl enable dhcpcd" >> ~/install.log
   systemctl enable dhcpcd
   exit
 }
@@ -1177,7 +1177,7 @@ installarchdi(){
   txtinstallarchdi="Arch Linux Desktop Install (archdi) is a second script who can help you to install a full workstation.\n\nYou can just launch the script or install it. Choose in the next menu.\n\nArch Linux Desktop Install as two dependencies : wget and libnewt.\n\npacstrap wget libnewt ?"
   if(whiptail --backtitle "$apptitle" --title "archdi" --yesno "$txtinstallarchdi" 0 0) then
     clear
-    echo "pacstrap /mnt wget libnewt"
+    echo "pacstrap /mnt wget libnewt" >> ~/install.log
     pacstrap /mnt wget libnewt
   fi
   if [ "$?" = "0" ]; then
@@ -1220,7 +1220,7 @@ archdidownload(){
       ;;
     esac
   fi
-  echo "curl -L $archdiurl >archdi"
+  echo "curl -L $archdiurl >archdi" >> ~/install.log
   curl -L $archdiurl >archdi
 }
 archdiinstallandlaunchchroot(){
